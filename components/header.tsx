@@ -1,7 +1,6 @@
 "use client";
 
 import { signOutAction } from "@/app/actions";
-import Link from "next/link";
 import { Button } from "./ui/button";
 import { ThemeSwitcher } from "./theme-switcher";
 import { Logo } from "./logo";
@@ -9,6 +8,8 @@ import { usePathname } from "next/navigation";
 import { MobileNav } from "./mobile-nav";
 import { useTranslations } from "next-intl";
 import { useUser } from "@/hooks/use-user";
+import { Link } from "@/i18n/routing";
+import { Skeleton } from "./ui/skeleton";
 
 interface NavItem {
   label: string;
@@ -19,7 +20,7 @@ export default function Header() {
   const pathname = usePathname();
   const t = useTranslations('nav');
   const isDashboard = pathname?.startsWith("/dashboard");
-  const { user } = useUser();
+  const { user, loading } = useUser();
 
   // 更可靠地检测当前 locale
   const pathParts = pathname?.split('/') || [];
@@ -39,7 +40,7 @@ export default function Header() {
   // Main navigation items
   const mainNavItems: NavItem[] = [
     { label: t('home'), href: localePrefix },
-    { label: t('tools'), href: `${localePrefix}/photo-to-anime` },
+    { label: t('tools'), href: localePrefix },
     { label: t('pricing'), href: `${localePrefix}/pricing` },
     { label: t('about'), href: `${localePrefix}/about` },
   ];
@@ -72,7 +73,8 @@ export default function Header() {
           {/* Language Switcher - 修复后的版本 */}
           <div className="hidden md:flex items-center gap-1 mr-2">
             <Link
-              href={`/en${pathWithoutLocale}`}
+              href={pathWithoutLocale}
+              locale="en"
               className={`px-2 py-1 rounded text-sm transition-colors ${currentLocale === 'en'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted'
@@ -81,7 +83,8 @@ export default function Header() {
               EN
             </Link>
             <Link
-              href={`/zh${pathWithoutLocale}`}
+              href={pathWithoutLocale}
+              locale="zh"
               className={`px-2 py-1 rounded text-sm transition-colors ${currentLocale === 'zh'
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground hover:bg-muted'
@@ -92,7 +95,12 @@ export default function Header() {
           </div>
 
           <ThemeSwitcher />
-          {user ? (
+          {loading ? (
+            <div className="hidden md:flex gap-2">
+              <Skeleton className="h-9 w-20" />
+              <Skeleton className="h-9 w-24" />
+            </div>
+          ) : user ? (
             <div className="hidden md:flex items-center gap-2">
               <Button asChild size="sm" variant="ghost">
                 <Link href={`${localePrefix}/dashboard`}>
@@ -115,7 +123,7 @@ export default function Header() {
               </Button>
             </div>
           )}
-          <MobileNav items={navItems} user={user} isDashboard={isDashboard} currentLocale={currentLocale} />
+          <MobileNav items={navItems} user={user} loading={loading} isDashboard={isDashboard} currentLocale={currentLocale} />
         </div>
       </div>
     </header>

@@ -4,7 +4,6 @@
     "dev": "next dev",
     "build": "next build",
     "pages:build": "npx @cloudflare/next-on-pages",
-    "postbuild": "next-sitemap",
     "start": "next start"
   },
   "dependencies": {

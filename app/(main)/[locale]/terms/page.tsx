@@ -4,8 +4,7 @@ import { site } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Scale, AlertTriangle, CreditCard, Image as ImageIcon } from "lucide-react";
-
-export const runtime = "edge";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 
 export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const params = await props.params;
@@ -56,6 +55,12 @@ export default async function TermsPage(props: { params: Promise<{ locale: strin
 
       <div className="container px-4 md:px-6 py-16">
         <div className="max-w-4xl mx-auto space-y-8">
+          <Breadcrumbs
+            items={[
+              { name: isZh ? "首页" : "Home", href: localePrefix },
+              { name: isZh ? "服务条款" : "Terms of Service", href: `${localePrefix}/terms` },
+            ]}
+          />
           <div className="text-center space-y-3">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{isZh ? "服务条款" : "Terms of Service"}</h1>
             <p className="text-muted-foreground">
@@ -123,6 +128,11 @@ export default async function TermsPage(props: { params: Promise<{ locale: strin
                   ? "付款与订阅由支付服务商处理。若发生支付问题，请优先联系支付服务商或我们的支持渠道。"
                   : "Payments and subscriptions are processed by a payment provider. Contact them or our support for billing issues."}
               </p>
+              <p>
+                {isZh
+                  ? `如需取消订阅、申请账单协助或了解退款政策，请联系 ${site.supportEmail}。`
+                  : `For subscription cancellation, billing help, or refund questions, contact ${site.supportEmail}.`}
+              </p>
             </CardContent>
           </Card>
 
@@ -139,4 +149,3 @@ export default async function TermsPage(props: { params: Promise<{ locale: strin
     </div>
   );
 }
-

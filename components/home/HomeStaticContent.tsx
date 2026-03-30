@@ -74,7 +74,7 @@ export default async function HomeStaticContent({ locale }: Props) {
 
             <div className="text-center">
               <Link
-                href={`${localePrefix}/photo-to-anime`}
+                href={`${localePrefix}`}
                 className="inline-flex items-center gap-2 text-primary font-medium hover:underline"
               >
                 {t("styles_more")} <ArrowRight className="w-4 h-4" />

@@ -4,8 +4,7 @@ import { site } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Sparkles, Shield, Zap } from "lucide-react";
-
-export const runtime = "edge";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 
 export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const params = await props.params;
@@ -68,6 +67,12 @@ export default async function AboutPage(props: { params: Promise<{ locale: strin
 
       <div className="container px-4 md:px-6 py-16">
         <div className="max-w-4xl mx-auto space-y-10">
+          <Breadcrumbs
+            items={[
+              { name: isZh ? "首页" : "Home", href: localePrefix },
+              { name: isZh ? "关于我们" : "About", href: `${localePrefix}/about` },
+            ]}
+          />
           <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
               {isZh ? `关于 ${site.siteName}` : `About ${site.siteName}`}
@@ -121,7 +126,7 @@ export default async function AboutPage(props: { params: Promise<{ locale: strin
 
           <div className="text-center">
             <Button asChild size="lg">
-              <Link href={`${localePrefix}/photo-to-anime`}>{isZh ? "开始生成" : "Start Generating"}</Link>
+              <Link href={`${localePrefix}`}>{isZh ? "开始生成" : "Start Generating"}</Link>
             </Button>
           </div>
         </div>
@@ -129,4 +134,3 @@ export default async function AboutPage(props: { params: Promise<{ locale: strin
     </div>
   );
 }
-

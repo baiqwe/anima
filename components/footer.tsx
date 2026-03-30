@@ -17,7 +17,7 @@ export function Footer() {
   const localePrefix = `/${currentLocale}`;
 
   const toolLinks = [
-    { label: "Photo to Anime", labelZh: "照片转二次元", href: `${localePrefix}/photo-to-anime` },
+    { label: "Photo to Anime", labelZh: "照片转二次元", href: `${localePrefix}` },
     { label: landingPages["ghibli-filter"]?.h1 || "Ghibli Filter", labelZh: "吉卜力风格", href: `${localePrefix}/ghibli-filter` },
     { label: landingPages["anime-pfp-generator"]?.h1 || "Anime PFP", labelZh: "动漫头像", href: `${localePrefix}/anime-pfp-generator` },
     { label: landingPages["cyberpunk-anime"]?.h1 || "Cyberpunk Anime", labelZh: "赛博朋克", href: `${localePrefix}/cyberpunk-anime` },

@@ -23,3 +23,4 @@ export function getLandingPage(slug: string): LandingPageConfig | null {
 }
 
 export const landingPageSlugs = Object.keys(landingPages);
+export const indexableLandingPageSlugs = landingPageSlugs.filter((slug) => slug !== "photo-to-anime");

@@ -15,6 +15,17 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
+  const pathname = request.nextUrl.pathname
+  const isProtectedRoute =
+    /^\/dashboard(?:\/|$)/.test(pathname) ||
+    /^\/(en|zh)\/dashboard(?:\/|$)/.test(pathname)
+
+  // Public marketing and SEO pages should bypass Supabase entirely so they can
+  // return from cache/CDN without paying the auth round-trip cost.
+  if (!isProtectedRoute) {
+    return response
+  }
+
   // 2. 初始化 Supabase 客户端
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

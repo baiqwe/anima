@@ -4,8 +4,7 @@ import { site } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Shield, AlertTriangle, Database, Share2 } from "lucide-react";
-
-export const runtime = "edge";
+import { Breadcrumbs } from "@/components/seo/breadcrumbs";
 
 export async function generateMetadata(props: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const params = await props.params;
@@ -59,6 +58,12 @@ export default async function PrivacyPage(props: { params: Promise<{ locale: str
 
       <div className="container px-4 md:px-6 py-16">
         <div className="max-w-4xl mx-auto space-y-8">
+          <Breadcrumbs
+            items={[
+              { name: isZh ? "首页" : "Home", href: localePrefix },
+              { name: isZh ? "隐私政策" : "Privacy Policy", href: `${localePrefix}/privacy` },
+            ]}
+          />
           <div className="text-center space-y-3">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{isZh ? "隐私政策" : "Privacy Policy"}</h1>
             <p className="text-muted-foreground">
@@ -107,6 +112,11 @@ export default async function PrivacyPage(props: { params: Promise<{ locale: str
                   ? "生成结果可能以链接或数据形式返回；具体存储策略会根据部署与成本策略调整。"
                   : "Generated results may be returned as URLs or data; storage strategy may change based on deployment and cost."}
               </p>
+              <p>
+                {isZh
+                  ? "默认情况下，我们只保留运行服务所需的最少信息，并会根据安全、计费、故障排查需要设置有限保留周期。"
+                  : "By default, we keep the minimum information needed to operate the service, with limited retention windows for security, billing, and troubleshooting."}
+              </p>
             </CardContent>
           </Card>
 
@@ -126,7 +136,12 @@ export default async function PrivacyPage(props: { params: Promise<{ locale: str
               <p>
                 {isZh
                   ? "如需删除账号或数据，请通过站内联系方式联系我们。"
-                  : "To request deletion of your account or data, contact us through the in-app contact channel."}
+                  : "To request deletion of your account or data, contact us through the support address below."}
+              </p>
+              <p>
+                {isZh
+                  ? `联系邮箱：${site.supportEmail}`
+                  : `Support email: ${site.supportEmail}`}
               </p>
             </CardContent>
           </Card>
@@ -144,4 +159,3 @@ export default async function PrivacyPage(props: { params: Promise<{ locale: str
     </div>
   );
 }
-

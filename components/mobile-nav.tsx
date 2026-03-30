@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Sheet,
   SheetContent,
@@ -9,18 +10,19 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
-import Link from "next/link";
 import { signOutAction } from "@/app/actions";
 import { usePathname } from "next/navigation";
+import { Link } from "@/i18n/routing";
 
 interface MobileNavProps {
   items: { label: string; href: string }[];
   user: any;
+  loading?: boolean;
   isDashboard: boolean;
   currentLocale?: string;
 }
 
-export function MobileNav({ items, user, isDashboard, currentLocale = 'en' }: MobileNavProps) {
+export function MobileNav({ items, user, loading = false, isDashboard, currentLocale = 'en' }: MobileNavProps) {
   const pathname = usePathname();
   const localePrefix = `/${currentLocale}`;
 
@@ -52,7 +54,8 @@ export function MobileNav({ items, user, isDashboard, currentLocale = 'en' }: Mo
             {currentLocale === 'zh' ? '语言:' : 'Language:'}
           </span>
           <Link
-            href={`/en${pathWithoutLocale}`}
+            href={pathWithoutLocale}
+            locale="en"
             className={`px-3 py-1.5 rounded text-sm transition-colors ${currentLocale === 'en'
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -61,7 +64,8 @@ export function MobileNav({ items, user, isDashboard, currentLocale = 'en' }: Mo
             EN
           </Link>
           <Link
-            href={`/zh${pathWithoutLocale}`}
+            href={pathWithoutLocale}
+            locale="zh"
             className={`px-3 py-1.5 rounded text-sm transition-colors ${currentLocale === 'zh'
               ? 'bg-primary text-primary-foreground'
               : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -83,7 +87,12 @@ export function MobileNav({ items, user, isDashboard, currentLocale = 'en' }: Mo
           ))}
         </nav>
         <div className="mt-auto pt-4 border-t">
-          {user ? (
+          {loading ? (
+            <div className="flex flex-col gap-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : user ? (
             <div className="flex flex-col gap-2">
               <Button asChild variant="default" className="w-full">
                 <Link href={`${localePrefix}/dashboard`}>
