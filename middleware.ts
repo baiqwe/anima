@@ -60,6 +60,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 排除 api, _next, 静态资源，以及 auth/callback (新位置)
-  matcher: ['/((?!api|_next|_vercel|auth/callback|.*\\..*).*)', '/(en|zh)/:path*']
+  // Exclude auth route handlers so next-intl does not prefix them with /en or /zh.
+  matcher: ['/((?!api|_next|_vercel|auth/callback|auth/google|.*\\..*).*)', '/(en|zh)/:path*']
 }
