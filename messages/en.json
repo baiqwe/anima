@@ -112,15 +112,85 @@
     "built_by": "Built for creators"
   },
   "Pricing": {
-    "title": "Pricing",
-    "subtitle": "Buy credits for more generations or subscribe for the best value.",
+    "eyebrow": "Creator Pricing",
+    "title": "Four cards. One obvious upgrade path.",
+    "subtitle": "Put buy-out packs and Pro subscriptions on the same plane, and the math starts selling for you. The lower the per-image cost and the richer the privileges, the easier the decision becomes.",
+    "artist_anchor": "Commissioning a human artist for a custom anime portrait can cost $30-$50 and take weeks. Animeify Pro gives you 100 studio-quality generations instantly for less than the price of one commission.",
+    "buyout_label": "Buy-out",
+    "subscription_label": "Pro",
+    "one_time_payment": "One-time payment",
     "month": "mo",
     "year": "yr",
-    "start_pro": "Start Pro",
-    "get_pack": "Get pack",
+    "start_pro": "Subscribe now",
+    "get_pack": "Buy now",
     "credits": "Credits",
     "generations": "Generations",
-    "price_per_image": "Cost / gen",
+    "price_per_image": "Cost / image",
+    "only_price_per_image": "Only ${price} / image",
+    "missing_features": "Missing features",
+    "faq_kicker": "Why upgrade?",
+    "checkout_failed": "Failed to start payment process.",
+    "refill_title": "Need more credits?",
+    "refill_subtitle": "Pick a quick buy-out pack or jump straight into Pro.",
+    "refill_upgrade": "Go Pro Monthly",
+    "refill_mini": "Get 10 credits",
+    "cards": {
+      "starter": {
+        "subtitle": "One-time payment",
+        "cta": "Buy 10 Credits",
+        "features": {
+          "credits": "10 Credits",
+          "speed": "Standard GPU Speed",
+          "resolution": "Standard Resolution"
+        },
+        "missing": {
+          "queue": "Priority Queue",
+          "upscale": "4K Upscaling",
+          "license": "Commercial License"
+        }
+      },
+      "pro_pack": {
+        "subtitle": "One-time payment",
+        "cta": "Buy 50 Credits",
+        "features": {
+          "credits": "50 Credits",
+          "speed": "Standard GPU Speed",
+          "resolution": "Standard Resolution",
+          "watermark": "No Watermark"
+        },
+        "missing": {
+          "queue": "Priority Queue",
+          "upscale": "4K Upscaling",
+          "styles": "Exclusive Pro Styles"
+        }
+      },
+      "monthly": {
+        "subtitle": "Billed monthly. Cancel anytime.",
+        "anchor": "Save 40%",
+        "cta": "Subscribe Now",
+        "features": {
+          "credits": "100 Credits / month",
+          "queue": "Priority GPU Queue (Zero wait times)",
+          "upscale": "4K HD Upscale",
+          "styles": "Exclusive Pro Styles",
+          "license": "Commercial Use License",
+          "watermark": "Zero Watermarks"
+        }
+      },
+      "yearly": {
+        "subtitle_prefix": "Equivalent to",
+        "anchor": "Best value. 2 months free.",
+        "cta": "Get Yearly Plan",
+        "features": {
+          "credits": "1200 Credits / year",
+          "queue": "Priority GPU Queue",
+          "upscale": "4K HD Upscale",
+          "styles": "Exclusive Pro Styles",
+          "license": "Commercial Use License",
+          "watermark": "Zero Watermarks"
+        }
+      }
+    },
     "error": "Error"
   },
   "common": {
@@ -132,4 +202,3 @@
     "close": "Close"
   }
 }
-

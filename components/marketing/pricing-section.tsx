@@ -1,242 +1,340 @@
 "use client";
 
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { Check, X, Loader2 } from 'lucide-react';
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import {
+    PLAN_ANCHOR,
     PLAN_MINI,
     PLAN_PRO_MONTHLY,
     PLAN_PRO_YEARLY,
-    PLAN_ANCHOR,
-    CREDITS_PER_GENERATION,
+    PricingPlan,
     calculateCostPerGeneration,
     getLocalizedPlan,
-    PricingPlan
 } from "@/config/credit-packs";
 
 interface PricingSectionProps {
     locale: string;
 }
 
+type LocalizedPlan = PricingPlan & {
+    displayName: string;
+    displayLabel?: string;
+    displayDescription?: string;
+    displayBadge?: string;
+};
+
 export function PricingSection({ locale }: PricingSectionProps) {
-    const t = useTranslations('Pricing');
+    const t = useTranslations("Pricing");
     const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
+
+    const plans = [
+        getLocalizedPlan(PLAN_MINI, locale) as LocalizedPlan,
+        getLocalizedPlan(PLAN_ANCHOR, locale) as LocalizedPlan,
+        getLocalizedPlan(PLAN_PRO_MONTHLY, locale) as LocalizedPlan,
+        getLocalizedPlan(PLAN_PRO_YEARLY, locale) as LocalizedPlan,
+    ];
+
+    const formatPrice = (price: number) =>
+        new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "USD",
+            minimumFractionDigits: 2,
+        }).format(price);
 
     const handlePurchase = async (plan: PricingPlan) => {
         try {
             setLoadingPlanId(plan.id);
 
             const formData = new FormData();
-            formData.append('priceId', plan.productId);
-            formData.append('productType', plan.type === 'subscription' ? 'subscription' : 'credits');
+            formData.append("priceId", plan.productId);
+            formData.append("productType", plan.type === "subscription" ? "subscription" : "credits");
 
             if (plan.credits) {
-                formData.append('credits', plan.credits.toString());
+                formData.append("credits", plan.credits.toString());
             }
 
-            // Redirect back to current page (pricing) or dashboard
             const successUrl = new URL(window.location.href);
             successUrl.pathname = `/${locale}/dashboard`;
-            successUrl.searchParams.set('checkout', 'success');
-            formData.append('redirectUrl', successUrl.toString());
+            successUrl.searchParams.set("checkout", "success");
+            formData.append("redirectUrl", successUrl.toString());
 
-            const response = await fetch('/api/creem/checkout', {
-                method: 'POST',
+            const response = await fetch("/api/creem/checkout", {
+                method: "POST",
                 body: formData,
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Checkout failed');
+                throw new Error(data.error || "Checkout failed");
             }
 
             if (data.checkout_url) {
                 window.location.href = data.checkout_url;
-            } else {
-                toast({
-                    title: t('error'),
-                    description: "Failed to initialize checkout.",
-                    variant: "destructive"
-                });
+                return;
             }
-        } catch (error) {
-            console.error('Payment error:', error);
+
             toast({
-                title: t('error'),
-                description: "Failed to start payment process.",
-                variant: "destructive"
+                title: t("error"),
+                description: t("checkout_failed"),
+                variant: "destructive",
+            });
+        } catch (error) {
+            console.error("Payment error:", error);
+            toast({
+                title: t("error"),
+                description: t("checkout_failed"),
+                variant: "destructive",
             });
         } finally {
             setLoadingPlanId(null);
         }
     };
 
-    // Prepare plans
-    const miniPlan = getLocalizedPlan(PLAN_MINI, locale);
-    const proMonthlyPlan = getLocalizedPlan(PLAN_PRO_MONTHLY, locale);
-    const proYearlyPlan = getLocalizedPlan(PLAN_PRO_YEARLY, locale);
-    const anchorPlan = getLocalizedPlan(PLAN_ANCHOR, locale);
+    const renderFeatures = (items: string[], options?: { dimmed?: boolean; yearly?: boolean }) => (
+        <ul className="space-y-3">
+            {items.map((item) => (
+                <li
+                    key={item}
+                    className={cn(
+                        "flex items-start gap-2 text-sm",
+                        options?.dimmed
+                            ? options?.yearly
+                                ? "text-slate-400 line-through"
+                                : "text-muted-foreground line-through"
+                            : options?.yearly
+                                ? "text-slate-100"
+                                : "text-foreground/90"
+                    )}
+                >
+                    <Check
+                        className={cn(
+                            "mt-0.5 h-4 w-4 shrink-0",
+                            options?.dimmed
+                                ? options?.yearly
+                                    ? "text-slate-500"
+                                    : "text-muted-foreground/70"
+                                : options?.yearly
+                                    ? "text-emerald-300"
+                                    : "text-primary"
+                        )}
+                    />
+                    <span>{item}</span>
+                </li>
+            ))}
+        </ul>
+    );
 
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2
-        }).format(price);
-    };
+    const renderCard = (plan: LocalizedPlan) => {
+        const isStarter = plan.id === PLAN_MINI.id;
+        const isPack = plan.id === PLAN_ANCHOR.id;
+        const isMonthly = plan.id === PLAN_PRO_MONTHLY.id;
+        const isYearly = plan.id === PLAN_PRO_YEARLY.id;
+        const costPerImage = calculateCostPerGeneration(plan);
 
-    const renderCard = (
-        plan: PricingPlan & { displayName: string, displayLabel?: string, displayDescription?: string },
-        highlightType: 'none' | 'popular' | 'best_value' = 'none'
-    ) => {
-        const costPerGen = calculateCostPerGeneration(plan);
-        const refCost = calculateCostPerGeneration(PLAN_ANCHOR); // Anchor price per gen
+        const cardClass = isYearly
+            ? "border-slate-800 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.22),transparent_30%),linear-gradient(180deg,#111827_0%,#020617_100%)] text-white shadow-[0_35px_120px_-35px_rgba(15,23,42,0.9)]"
+            : isMonthly
+                ? "border-primary/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,245,255,0.95))] shadow-[0_30px_110px_-40px_rgba(147,51,234,0.55)]"
+                : "border-border/70 bg-white/95 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.3)]";
 
-        const isHighlight = highlightType !== 'none';
-        const savings = isHighlight ? Math.round((1 - costPerGen / refCost) * 100) : 0;
+        const badgeClass = isYearly
+            ? "bg-amber-300 text-slate-950"
+            : isMonthly
+                ? "bg-rose-500 text-white"
+                : "bg-muted text-foreground";
 
-        let borderColor = "border-border";
-        let shadowClass = "shadow-sm hover:shadow-md";
-        let labelColor = "bg-muted text-foreground";
-        let buttonClass = "bg-background border-2 border-primary/20 hover:border-primary text-foreground hover:bg-muted";
+        const buttonClass = isYearly
+            ? "bg-white text-slate-950 hover:bg-slate-100"
+            : isMonthly
+                ? "group relative overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90"
+                : "border border-border bg-background text-foreground hover:bg-muted";
 
-        if (highlightType === 'popular') {
-            borderColor = "border-primary shadow-xl scale-105 z-10";
-            shadowClass = "shadow-2xl";
-            labelColor = "bg-gradient-to-r from-primary to-purple-600 text-white";
-            buttonClass = "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl";
-        } else if (highlightType === 'best_value') {
-            borderColor = "border-green-500 shadow-xl scale-105 z-10";
-            shadowClass = "shadow-2xl";
-            labelColor = "bg-green-600 text-white";
-            buttonClass = "bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl";
-        }
+        const textMuted = isYearly ? "text-slate-300" : "text-muted-foreground";
+        const divider = isYearly ? "border-white/10" : "border-border/60";
+        const anchorClass = isYearly ? "text-emerald-300" : isMonthly ? "text-primary" : "text-foreground";
+
+        const coreFeatures = isStarter
+            ? [
+                t("cards.starter.features.credits"),
+                t("cards.starter.features.speed"),
+                t("cards.starter.features.resolution"),
+            ]
+            : isPack
+                ? [
+                    t("cards.pro_pack.features.credits"),
+                    t("cards.pro_pack.features.speed"),
+                    t("cards.pro_pack.features.resolution"),
+                    t("cards.pro_pack.features.watermark"),
+                ]
+                : isMonthly
+                    ? [
+                        t("cards.monthly.features.credits"),
+                        t("cards.monthly.features.queue"),
+                        t("cards.monthly.features.upscale"),
+                        t("cards.monthly.features.styles"),
+                        t("cards.monthly.features.license"),
+                        t("cards.monthly.features.watermark"),
+                    ]
+                    : [
+                        t("cards.yearly.features.credits"),
+                        t("cards.yearly.features.queue"),
+                        t("cards.yearly.features.upscale"),
+                        t("cards.yearly.features.styles"),
+                        t("cards.yearly.features.license"),
+                        t("cards.yearly.features.watermark"),
+                    ];
+
+        const missingFeatures = isStarter
+            ? [
+                t("cards.starter.missing.queue"),
+                t("cards.starter.missing.upscale"),
+                t("cards.starter.missing.license"),
+            ]
+            : isPack
+                ? [
+                    t("cards.pro_pack.missing.queue"),
+                    t("cards.pro_pack.missing.upscale"),
+                    t("cards.pro_pack.missing.styles"),
+                ]
+                : [];
 
         return (
             <div
                 key={plan.id}
                 className={cn(
-                    "relative flex flex-col p-6 rounded-2xl bg-card border transition-all duration-300 h-full",
-                    borderColor,
-                    shadowClass,
-                    !isHighlight && "opacity-90 hover:opacity-100 hover:border-primary/50"
+                    "relative flex h-full snap-center flex-col rounded-[32px] border px-7 pb-6 pt-7 transition-all duration-300 hover:-translate-y-1",
+                    cardClass,
+                    isMonthly || isYearly ? "lg:z-10" : ""
                 )}
             >
-                {plan.displayLabel && (
-                    <div className={cn(
-                        "absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-sm font-bold shadow-sm whitespace-nowrap",
-                        labelColor
-                    )}>
-                        {plan.displayLabel}
-                    </div>
-                )}
-
-                <div className="mb-5 text-center">
-                    <h3 className="text-xl font-bold">{plan.displayName}</h3>
-                    <p className="text-sm text-muted-foreground mt-1 min-h-[40px] flex items-center justify-center">{plan.displayDescription}</p>
-                </div>
-
-                <div className="flex items-baseline justify-center gap-1 mb-6">
-                    <span className="text-3xl font-extrabold">{formatPrice(plan.price)}</span>
-                    {plan.interval && (
-                        <span className="text-muted-foreground text-sm">/{plan.interval === 'month' ? t('month') : t('year')}</span>
-                    )}
-                </div>
-
-                <div className="space-y-4 mb-8 flex-1">
-                    <div className="flex justify-between items-center py-2 border-b">
-                        <span className="text-muted-foreground text-sm">{t('credits')}</span>
-                        <span className="font-bold flex items-center gap-1">
-                            {plan.credits.toLocaleString()}
-                            <span className="text-xs font-normal text-muted-foreground">pts</span>
+                {plan.displayLabel ? (
+                    <div className="absolute inset-x-0 -top-4 z-20 flex justify-center px-3">
+                        <span className={cn("rounded-full px-4 py-1.5 text-xs font-black uppercase tracking-[0.18em] shadow-lg", badgeClass)}>
+                            {plan.displayLabel}
+                            {plan.displayBadge ? ` · ${plan.displayBadge}` : ""}
                         </span>
                     </div>
+                ) : null}
 
-                    <div className="flex justify-between items-center py-2 border-b">
-                        <span className="text-muted-foreground text-sm">{t('generations')}</span>
-                        <span className="font-bold">≈ {Math.floor(plan.credits / CREDITS_PER_GENERATION)}</span>
+                <div className={cn("relative z-10 flex flex-col gap-3.5", plan.displayLabel ? "pt-6" : "pt-0")}>
+                    <div>
+                        <p className={cn("text-xs font-semibold uppercase tracking-[0.24em]", textMuted)}>
+                            {plan.type === "subscription" ? t("subscription_label") : t("buyout_label")}
+                        </p>
+                        <h3 className="mt-3 text-3xl font-black tracking-tight">{plan.displayName}</h3>
+                        <p className={cn("mt-3 text-sm leading-6", textMuted)}>{plan.displayDescription}</p>
                     </div>
 
-                    <div className="flex justify-between items-center py-2 border-b bg-muted/20 px-2 rounded">
-                        <span className="text-xs text-muted-foreground">{t('price_per_image')}</span>
-                        <div className="text-right flex flex-col items-end">
-                            <span className={cn("font-bold text-sm", isHighlight ? "text-green-600 dark:text-green-400" : "text-muted-foreground")}>
-                                ${costPerGen.toFixed(3)}
+                    <div className="flex items-end gap-2">
+                        <span className={cn("text-5xl font-black tracking-tight", isYearly ? "text-white" : "text-foreground")}>
+                            {formatPrice(plan.price)}
+                        </span>
+                        {plan.interval ? (
+                            <span className={cn("pb-2 text-base", textMuted)}>
+                                / {plan.interval === "month" ? t("month") : t("year")}
                             </span>
-                            {isHighlight && (
-                                <span className="text-[10px] text-green-600 font-bold bg-green-100 dark:bg-green-900/30 px-1 rounded">
-                                    -{savings}%
-                                </span>
-                            )}
+                        ) : null}
+                    </div>
+
+                    {isYearly ? (
+                        <div className="text-sm">
+                            <span className="text-slate-300">{t("cards.yearly.subtitle_prefix")} </span>
+                            <span className="font-semibold text-rose-300 line-through">{formatPrice(PLAN_PRO_MONTHLY.price)}</span>
+                            <span className="text-slate-300"> </span>
+                            <span className="font-semibold text-white">{formatPrice(PLAN_PRO_YEARLY.price / 12)}/mo</span>
                         </div>
+                    ) : (
+                        <p className={cn("text-sm", textMuted)}>
+                            {isStarter || isPack ? t("one_time_payment") : t("cards.monthly.subtitle")}
+                        </p>
+                    )}
+
+                    <div className={cn("rounded-2xl border px-4 py-4", isYearly ? "border-white/10 bg-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" : isMonthly ? "border-primary/15 bg-primary/5" : "border-border/60 bg-muted/30")}>
+                        <p className={cn("text-xs font-semibold uppercase tracking-[0.22em]", textMuted)}>
+                            {t("price_per_image")}
+                        </p>
+                        <p className={cn("mt-2 text-2xl font-black", anchorClass)}>
+                            {t("only_price_per_image", { price: costPerImage.toFixed(2) })}
+                        </p>
+                        {isMonthly ? (
+                            <p className="mt-2 text-sm font-semibold text-emerald-600">{t("cards.monthly.anchor")}</p>
+                        ) : null}
+                        {isYearly ? (
+                            <p className="mt-2 text-sm font-semibold text-emerald-300">{t("cards.yearly.anchor")}</p>
+                        ) : null}
                     </div>
                 </div>
 
-                <div className="mt-auto pt-4">
+                <div className={cn("my-5 border-t", divider)} />
+
+                <div className="flex-1">
+                    {renderFeatures(coreFeatures, { yearly: isYearly })}
+
+                    {missingFeatures.length > 0 ? (
+                        <div className={cn("mt-5 rounded-2xl border px-4 py-4", isYearly ? "border-white/10 bg-white/5" : "border-border/50 bg-muted/20")}>
+                            <p className={cn("mb-3 text-xs font-semibold uppercase tracking-[0.22em]", textMuted)}>
+                                {t("missing_features")}
+                            </p>
+                            {renderFeatures(missingFeatures, { dimmed: true, yearly: isYearly })}
+                        </div>
+                    ) : null}
+                </div>
+
+                <div className="mt-auto pt-6">
                     <Button
-                        className={cn(
-                            "w-full font-bold h-12 text-md transition-transform active:scale-95",
-                            buttonClass
-                        )}
+                        className={cn("h-12 w-full rounded-xl font-semibold", buttonClass)}
                         onClick={() => handlePurchase(plan)}
                         disabled={!!loadingPlanId}
                     >
-                        {loadingPlanId === plan.id ? (
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        ) : highlightType === 'popular' ? t('start_pro') : t('get_pack')}
+                        {isMonthly ? (
+                            <span className="pointer-events-none absolute inset-y-0 left-[-35%] w-1/3 skew-x-[-20deg] bg-white/25 blur-xl transition-transform duration-700 group-hover:translate-x-[420%]" />
+                        ) : null}
+                        {loadingPlanId === plan.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                        {isStarter
+                            ? t("cards.starter.cta")
+                            : isPack
+                                ? t("cards.pro_pack.cta")
+                                : isMonthly
+                                    ? t("cards.monthly.cta")
+                                    : t("cards.yearly.cta")}
                     </Button>
-
-                    {/* Secure Payment Note */}
-                    <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground opacity-70">
-                        <Check className="w-3 h-3" />
-                        <span>Secure via Creem</span>
-                    </div>
                 </div>
             </div>
         );
     };
 
     return (
-        <div className="w-full max-w-7xl mx-auto px-4 py-12">
-            {/* Header */}
-            <div className="text-center mb-12 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-                    {t('title')}
-                </h2>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                    {t('subtitle')}
-                </p>
-            </div>
+        <section className="relative isolate overflow-visible">
+            <div className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_15%_10%,rgba(244,114,182,0.12),transparent_24%),radial-gradient(circle_at_85%_10%,rgba(99,102,241,0.14),transparent_22%),linear-gradient(180deg,#f8fafc_0%,#ffffff_42%,#f8fafc_100%)]" />
+            <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:34px_34px] [mask-image:radial-gradient(circle_at_center,black,transparent_85%)]" />
 
-            {/* Pricing Grid - 4 Columns */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start max-w-7xl mx-auto">
-                {/* 1. Mini Refill */}
-                <div className="lg:mt-8 h-full">
-                    {renderCard(miniPlan, 'none')}
+            <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-4xl text-center">
+                    <span className="inline-flex rounded-full border border-primary/15 bg-white/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary shadow-sm">
+                        {t("eyebrow")}
+                    </span>
+                    <h2 className="mt-6 text-4xl font-black tracking-tight sm:text-5xl">{t("title")}</h2>
+                    <p className="mx-auto mt-5 max-w-3xl text-lg leading-8 text-muted-foreground">{t("subtitle")}</p>
                 </div>
 
-                {/* 2. Pro Monthly (Popular) */}
-                <div className="h-full transform lg:-translate-y-2">
-                    {renderCard(proMonthlyPlan, 'popular')}
+                <div className="mt-14 overflow-x-auto overflow-y-visible pb-6 pt-6 [scrollbar-width:none]">
+                    <div className="grid min-w-[1180px] snap-x snap-mandatory grid-cols-4 items-stretch gap-6 px-1 lg:min-w-0">
+                        {plans.map(renderCard)}
+                    </div>
                 </div>
 
-                {/* 3. Pro Yearly (Best Value) */}
-                <div className="h-full transform lg:-translate-y-2">
-                    {renderCard(proYearlyPlan, 'best_value')}
-                </div>
-
-                {/* 4. Lifetime Anchor */}
-                <div className="lg:mt-8 h-full">
-                    {renderCard(anchorPlan, 'none')}
+                <div className="mt-12 rounded-[28px] border border-amber-300/50 bg-amber-50 px-6 py-5 shadow-sm">
+                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-800">{t("faq_kicker")}</p>
+                    <p className="mt-3 text-base leading-8 text-amber-950">{t("artist_anchor")}</p>
                 </div>
             </div>
-        </div>
+        </section>
     );
 }
 
-// Default export if needed
 export default PricingSection;

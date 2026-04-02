@@ -17,6 +17,12 @@ interface QuickRefillModalProps {
 export function QuickRefillModal({ isOpen, onClose, currentPath }: QuickRefillModalProps) {
     const t = useTranslations('Pricing');
     const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
+    const formatPrice = (price: number) =>
+        new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2
+        }).format(price);
 
     const handlePurchase = async (plan: PricingPlan) => {
         try {
@@ -108,7 +114,7 @@ export function QuickRefillModal({ isOpen, onClose, currentPath }: QuickRefillMo
                                         {t('refill_upgrade')}
                                     </span>
                                     <span className="text-primary-foreground/80 text-sm font-normal">
-                                        $9.90 / mo • 1000 Credits
+                                        {formatPrice(PLAN_PRO_MONTHLY.price)} / {t('month')} • {PLAN_PRO_MONTHLY.credits} {t('credits')}
                                     </span>
                                 </>
                             )}
@@ -134,7 +140,7 @@ export function QuickRefillModal({ isOpen, onClose, currentPath }: QuickRefillMo
                         {loadingPlanId === PLAN_MINI.id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                            <span>{t('refill_mini')} (500 pts)</span>
+                            <span>{t('refill_mini')} ({PLAN_MINI.credits} pts)</span>
                         )}
                     </Button>
                 </div>
