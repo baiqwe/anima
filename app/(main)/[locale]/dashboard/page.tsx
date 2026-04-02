@@ -11,8 +11,6 @@ export default async function DashboardPage(props: { params: Promise<{ locale: s
     const { locale } = params;
 
     const supabase = await createClient();
-    const projectId = await getProjectId(supabase);
-
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -21,25 +19,41 @@ export default async function DashboardPage(props: { params: Promise<{ locale: s
         return redirect(`/${locale}/sign-in`);
     }
 
-    // 获取客户数据、订阅和积分
-    const { data: customerData } = await supabase
-        .from("customers")
-        .select(
-            `
-      *,
-      subscriptions (
-        status,
-        current_period_end,
-        creem_product_id
-      )
-    `
-        )
-        .eq("project_id", projectId)
-        .eq("user_id", user.id)
-        .single();
+    let subscription: {
+        status: string;
+        current_period_end: string;
+        creem_product_id?: string;
+    } | null = null;
+    let credits = 0;
 
-    const subscription = customerData?.subscriptions?.[0];
-    const credits = customerData?.credits || 0;
+    try {
+        const projectId = await getProjectId(supabase);
+
+        const { data: customerData, error: customerError } = await supabase
+            .from("customers")
+            .select(
+                `
+        *,
+        subscriptions (
+          status,
+          current_period_end,
+          creem_product_id
+        )
+      `
+            )
+            .eq("project_id", projectId)
+            .eq("user_id", user.id)
+            .maybeSingle();
+
+        if (customerError) {
+            console.error("Failed to load dashboard customer data:", customerError);
+        } else if (customerData) {
+            subscription = customerData.subscriptions?.[0] ?? null;
+            credits = customerData.credits || 0;
+        }
+    } catch (error) {
+        console.error("Failed to load dashboard project data:", error);
+    }
 
     const welcomeText = locale === 'zh' ? '欢迎回来' : 'Welcome back';
     const manageText = locale === 'zh' ? '在这里管理您的订阅和积分。' : 'Manage your subscription and credits here.';
