@@ -27,7 +27,7 @@ export const CREDITS_PER_GENERATION = 1;
 // 1. Buy-out: Starter Pack
 export const PLAN_MINI: PricingPlan = {
     id: "mini_refill",
-    productId: "prod_53WEfYlCnhJ5bqmMjhjtE0",
+    productId: "prod_6YOc0hnaYoimusgXJkh3a2",
     name: "Starter Pack",
     nameZh: "入门买断包",
     price: 4.99,
@@ -41,7 +41,7 @@ export const PLAN_MINI: PricingPlan = {
 // 2. Subscription: Pro Monthly
 export const PLAN_PRO_MONTHLY: PricingPlan = {
     id: "pro_monthly",
-    productId: "prod_1ldaOfNHXcsVYr3Fq7Dsda",
+    productId: "prod_4pBVe6NzowRcuNB77DECWu",
     name: "Pro Monthly",
     nameZh: "Pro 月订阅",
     price: 29.99,

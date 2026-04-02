@@ -8,6 +8,8 @@ export async function createOrUpdateCustomer(
 ) {
   const supabase = createServiceRoleClient();
   const projectId = await getProjectId(supabase);
+  const { data: authUserResult } = await supabase.auth.admin.getUserById(userId);
+  const canonicalEmail = authUserResult?.user?.email ?? creemCustomer.email ?? null;
 
   // First, try to find existing customer by user_id (preserves existing credits from registration)
   const { data: existingByUserId, error: userIdError } = await supabase
@@ -27,8 +29,8 @@ export async function createOrUpdateCustomer(
       .from("customers")
       .update({
         creem_customer_id: creemCustomer.id,
-        email: creemCustomer.email,
-        name: creemCustomer.name,
+        email: existingByUserId.email || canonicalEmail,
+        name: existingByUserId.name || creemCustomer.name,
         country: creemCustomer.country,
         updated_at: new Date().toISOString(),
       })
@@ -56,8 +58,8 @@ export async function createOrUpdateCustomer(
     const { error } = await supabase
       .from("customers")
       .update({
-        email: creemCustomer.email,
-        name: creemCustomer.name,
+        email: existingByCreemId.email || canonicalEmail,
+        name: existingByCreemId.name || creemCustomer.name,
         country: creemCustomer.country,
         updated_at: new Date().toISOString(),
       })
@@ -75,7 +77,7 @@ export async function createOrUpdateCustomer(
       project_id: projectId,
       user_id: userId,
       creem_customer_id: creemCustomer.id,
-      email: creemCustomer.email,
+      email: canonicalEmail,
       name: creemCustomer.name,
       country: creemCustomer.country,
       credits: 0, // New customers start with 0, credits will be added separately
