@@ -191,7 +191,7 @@ export async function createCheckoutSession(
       requestBody.discount_code = discountCode;
     }
 
-    const response = await fetch(process.env.CREEM_API_URL + "/checkouts", {
+    const response = await fetch(process.env.CREEM_API_URL + "/v1/checkouts", {
       method: "POST",
       headers: {
         "x-api-key": process.env.CREEM_API_KEY!,

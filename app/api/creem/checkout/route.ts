@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         }
 
         // 3. 调用 Creem API 创建 Checkout Session
-        const response = await fetch(`${process.env.CREEM_API_URL}/checkouts`, {
+        const response = await fetch(`${process.env.CREEM_API_URL}/v1/checkouts`, {
             method: "POST",
             headers: {
                 "x-api-key": process.env.CREEM_API_KEY!,

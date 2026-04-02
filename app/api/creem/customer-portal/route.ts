@@ -31,19 +31,17 @@ export async function GET() {
         }
 
         // 3. 调用 Creem API 获取 Customer Portal URL
-        const response = await fetch(
-            `${process.env.CREEM_API_URL}/customers/${customerData.creem_customer_id}/billing-portal`,
-            {
-                method: "POST",
-                headers: {
-                    "x-api-key": process.env.CREEM_API_KEY!,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/en/dashboard`,
-                }),
-            }
-        );
+        const response = await fetch(`${process.env.CREEM_API_URL}/v1/customers/billing`, {
+            method: "POST",
+            headers: {
+                "x-api-key": process.env.CREEM_API_KEY!,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                customer_id: customerData.creem_customer_id,
+                return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/en/dashboard`,
+            }),
+        });
 
         const data = await response.json();
 
