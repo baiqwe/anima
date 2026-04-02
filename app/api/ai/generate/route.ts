@@ -13,23 +13,52 @@ const NANO_BANANA_MODEL = "google/gemini-2.5-flash-image";
 
 type Intensity = "low" | "medium" | "high";
 
-const PROMPT_TEMPLATES: Record<AnimeStyleId, string> = {
-    standard:
-        "High-quality 2D anime illustration, Kyoto Animation-inspired clean lines, detailed eyes, soft shading, pleasing color harmony.",
-    ghibli:
-        "Studio Ghibli-inspired hand-drawn animation style, warm palette, gentle linework, natural lighting, storybook atmosphere.",
-    cyberpunk:
-        "Cyberpunk anime style, neon lighting, futuristic city mood, bold rim light, high contrast, vibrant colors, cinematic composition.",
-    retro_90s:
-        "1990s retro anime style, cel shading, nostalgic pastel palette, clean outlines, slight film grain vibe (no text).",
-    webtoon:
-        "Modern webtoon illustration style, crisp line art, readable flat shading, clean shapes, contemporary character rendering.",
-    cosplay:
-        "Anime redraw of a cosplay photo, preserve outfit identity and key colors, polished 2D illustration look, clean linework.",
-};
+const PONY_PREFIX =
+    "score_9, score_8_up, score_7_up, source_anime, masterpiece, best quality";
+const PONY_NEGATIVE_PREFIX =
+    "score_6, score_5, score_4, worst quality, low quality, 3d, realistic, photorealistic";
 
-const NEGATIVE_PROMPT =
-    "photorealistic, realistic, 3d, cgi, low quality, blurry, noisy, deformed, extra fingers, bad anatomy, text, watermark, logo, caption, signature";
+const STYLE_PRESETS: Record<
+    AnimeStyleId,
+    { prompt: string; negative: string; denoising: number }
+> = {
+    standard: {
+        prompt:
+            "anime artwork, 2d illustration, flat shading, high contrast, vibrant colors, clean lines, stunning visual, highly detailed face, official anime art",
+        negative: "blurry, muddy colors, bad anatomy",
+        denoising: 0.58,
+    },
+    ghibli: {
+        prompt:
+            "studio ghibli style, traditional animation, watercolor background, lush nature, soft lighting, spirited away style, flat colors, nostalgic vibe",
+        negative: "cyberpunk, dark, neon, 3d render, modern digital art, sharp edges",
+        denoising: 0.63,
+    },
+    cyberpunk: {
+        prompt:
+            "cyberpunk style, cyberpunk edgerunners, neon lights, glowing accents, night city, high tech, dramatic lighting, dark background, vivid colors",
+        negative: "daytime, soft lighting, nature, watercolor, pale colors",
+        denoising: 0.65,
+    },
+    retro_90s: {
+        prompt:
+            "1990s style, retro anime, vintage anime, classic anime, cel shading, vhs artifacts, soft pastel colors, old anime style, nostalgic",
+        negative: "modern anime, high resolution, ultra sharp, glossy skin, 3d",
+        denoising: 0.55,
+    },
+    webtoon: {
+        prompt:
+            "korean webtoon style, manhwa style, solo leveling style, sharp features, aesthetic, detailed eyes, glossy hair, modern web comic",
+        negative: "chibi, cute, 90s style, thick lines",
+        denoising: 0.52,
+    },
+    cosplay: {
+        prompt:
+            "anime redraw of a cosplay photo, preserve outfit identity and key colors, polished 2d illustration look, clean linework, official anime art, vibrant colors",
+        negative: "photorealistic costume texture, messy linework, muddy colors, blurry",
+        denoising: 0.56,
+    },
+};
 
 function buildPrompt(opts: {
     style: AnimeStyleId;
@@ -38,6 +67,7 @@ function buildPrompt(opts: {
     keepHairColor: boolean;
     userPrompt?: string;
 }) {
+    const stylePreset = STYLE_PRESETS[opts.style] ?? STYLE_PRESETS.standard;
     const intensityLine =
         opts.intensity === "low"
             ? "Low anime intensity: keep more of the original facial structure and proportions."
@@ -54,11 +84,12 @@ function buildPrompt(opts: {
     return [
         "Task: Transform the provided photo into anime-style artwork.",
         "Output: One single image, no text, no watermark.",
-        `Style: ${PROMPT_TEMPLATES[opts.style]}`,
+        `Base quality tags: ${PONY_PREFIX}.`,
+        `Style preset: ${stylePreset.prompt}.`,
         intensityLine,
         ...keepLines,
         userLine,
-        `Negative prompt: ${NEGATIVE_PROMPT}`,
+        `Negative prompt: ${PONY_NEGATIVE_PREFIX}, ${stylePreset.negative}, text, watermark, logo, caption, signature.`,
     ]
         .filter(Boolean)
         .join("\n");
@@ -76,6 +107,7 @@ export async function POST(request: NextRequest) {
         const keepEyeColor: boolean = body?.keepEyeColor !== false;
         const keepHairColor: boolean = body?.keepHairColor !== false;
         const prompt: string | undefined = body?.prompt;
+        const stylePreset = STYLE_PRESETS[style] ?? STYLE_PRESETS.standard;
 
         // 1. Authentication
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -235,7 +267,17 @@ export async function POST(request: NextRequest) {
                 input_image_url: "user_upload",
                 status: "succeeded",
                 credits_cost: CREDITS_PER_GENERATION,
-                metadata: { style, intensity, keepEyeColor, keepHairColor, model: NANO_BANANA_MODEL }
+                metadata: {
+                    style,
+                    intensity,
+                    keepEyeColor,
+                    keepHairColor,
+                    model: NANO_BANANA_MODEL,
+                    stylePrompt: stylePreset.prompt,
+                    styleNegativePrompt: `${PONY_NEGATIVE_PREFIX}, ${stylePreset.negative}`,
+                    denoisingStrength: stylePreset.denoising,
+                    promptFramework: "pony-style-preset-matrix",
+                }
             });
 
             return NextResponse.json({ url: resultImageUrl, success: true });
