@@ -1,7 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
-import { createServiceRoleClient } from "@/utils/supabase/service-role";
-import { getAppKey, getProjectId } from "@/utils/supabase/project";
+import { ensureProjectCustomer } from "@/utils/supabase/provision";
 
 export const runtime = 'edge';
 
@@ -37,88 +36,6 @@ function parseCookies(cookieHeader: string): { name: string; value: string }[] {
         }).filter(c => c.name);
     } catch {
         return [];
-    }
-}
-
-async function ensureCustomerForCurrentProject(user: { id: string; email?: string | null }) {
-    const serviceSupabase = createServiceRoleClient();
-    const projectId = await getProjectId(serviceSupabase);
-
-    const { data: existingCustomer, error: existingCustomerError } = await serviceSupabase
-        .from("customers")
-        .select("id")
-        .eq("project_id", projectId)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-    if (existingCustomerError) {
-        throw existingCustomerError;
-    }
-
-    if (existingCustomer) {
-        return;
-    }
-
-    const { data: fallbackCustomer, error: fallbackCustomerError } = await serviceSupabase
-        .from("customers")
-        .select("project_id, creem_customer_id, email, name, country, credits, metadata")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-    if (fallbackCustomerError) {
-        throw fallbackCustomerError;
-    }
-
-    const credits = fallbackCustomer?.credits ?? 30;
-    const customerEmail = fallbackCustomer?.email ?? user.email ?? "";
-
-    const { data: insertedCustomer, error: insertCustomerError } = await serviceSupabase
-        .from("customers")
-        .insert({
-            project_id: projectId,
-            user_id: user.id,
-            creem_customer_id: fallbackCustomer?.creem_customer_id ?? `auto_${user.id}`,
-            email: customerEmail,
-            name: fallbackCustomer?.name ?? null,
-            country: fallbackCustomer?.country ?? null,
-            credits,
-            metadata: {
-                ...(fallbackCustomer?.metadata ?? {}),
-                source: fallbackCustomer ? "oauth_project_recovery" : "oauth_auto_registration",
-                app_key: getAppKey(),
-                recovered_from_project_id: fallbackCustomer?.project_id ?? null,
-            },
-        })
-        .select("id")
-        .single();
-
-    if (insertCustomerError) {
-        throw insertCustomerError;
-    }
-
-    const shouldInsertHistory = credits > 0;
-    if (shouldInsertHistory) {
-        const { error: historyError } = await serviceSupabase
-            .from("credits_history")
-            .insert({
-                project_id: projectId,
-                customer_id: insertedCustomer.id,
-                amount: credits,
-                type: "add",
-                description: fallbackCustomer
-                    ? "Recovered credits for OAuth login in current project"
-                    : "Welcome bonus: 30 credits for OAuth user",
-                metadata: {
-                    source: fallbackCustomer ? "oauth_project_recovery" : "oauth_auto_registration",
-                    app_key: getAppKey(),
-                },
-            });
-
-        if (historyError) {
-            throw historyError;
-        }
     }
 }
 
@@ -186,7 +103,7 @@ export async function GET(request: Request) {
         }
 
         if (user) {
-            await ensureCustomerForCurrentProject(user);
+            await ensureProjectCustomer(user);
         }
 
         // 成功 - 重定向到首页
