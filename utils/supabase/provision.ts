@@ -1,7 +1,7 @@
 import { createServiceRoleClient } from "./service-role";
 import { getAppKey, getProjectId } from "./project";
 
-const DEFAULT_PROJECT_CREDITS = 3;
+const DEFAULT_PROJECT_CREDITS = 1;
 
 type ProvisionUser = {
   id: string;
@@ -59,7 +59,7 @@ export async function ensureProjectCustomer(user: ProvisionUser) {
       customer_id: insertedCustomer.id,
       amount: DEFAULT_PROJECT_CREDITS,
       type: "add",
-      description: "Welcome bonus: 3 credits for project signup",
+      description: "Welcome bonus: 1 credit for project signup",
       metadata: {
         source: "project_provisioning",
         app_key: getAppKey(),
