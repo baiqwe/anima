@@ -1,3 +1,5 @@
+import { site } from "@/config/site";
+
 // 面包屑结构化数据组件 - 帮助 Google 展示层级结构
 interface BreadcrumbItem {
   name: string;
@@ -9,6 +11,14 @@ interface BreadcrumbSchemaProps {
 }
 
 export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
+  const toAbsoluteUrl = (url: string) => {
+    try {
+      return new URL(url, site.siteUrl).toString();
+    } catch {
+      return site.siteUrl;
+    }
+  };
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -16,7 +26,10 @@ export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": item.url
+      "item": {
+        "@id": toAbsoluteUrl(item.url),
+        "name": item.name
+      }
     }))
   };
 
@@ -93,5 +106,4 @@ export function HowToSchema({ name, description, steps }: HowToSchemaProps) {
     />
   );
 }
-
 
