@@ -15,59 +15,32 @@ const REPLICATE_MODEL =
 
 type Intensity = "low" | "medium" | "high";
 
-const PONY_PREFIX =
-    "score_9, score_8_up, score_7_up, source_anime, masterpiece, best quality, very aesthetic";
-const PONY_NEGATIVE_PREFIX =
-    "score_6, score_5, score_4, worst quality, low quality, 3d, realistic, photorealistic, lowres";
-
-const STYLE_PRESETS: Record<AnimeStyleId, { prompt: string; negative: string; denoising: number }> = {
+const STYLE_PRESETS: Record<AnimeStyleId, { prompt: string }> = {
     standard: {
         prompt:
-            "anime artwork, 2d illustration, flat shading, high contrast, vibrant colors, clean lines, stunning visual, highly detailed face, official anime art",
-        negative: "blurry, muddy colors, bad anatomy",
-        denoising: 0.58,
+            "high-quality modern anime portrait, polished 2D illustration, clean linework, expressive eyes, balanced flat shading, crisp facial rendering, vibrant but natural color palette",
     },
     ghibli: {
         prompt:
-            "studio ghibli style, traditional animation, watercolor background, lush nature, soft lighting, spirited away style, flat colors, nostalgic vibe",
-        negative: "cyberpunk, dark, neon, 3d render, modern digital art, sharp edges",
-        denoising: 0.63,
+            "warm hand-drawn animation inspired by classic Japanese fantasy films, soft watercolor backgrounds, gentle natural lighting, painterly textures, nostalgic atmosphere, simplified facial rendering, storybook charm",
     },
     cyberpunk: {
         prompt:
-            "cyberpunk style, cyberpunk edgerunners, neon lights, glowing accents, night city, high tech, dramatic lighting, dark background, vivid colors",
-        negative: "daytime, soft lighting, nature, watercolor, pale colors",
-        denoising: 0.65,
+            "anime portrait in a futuristic cyberpunk world, neon rim lighting, glowing accents, electric signage, high-contrast shadows, saturated magenta and cyan palette, sleek techwear mood, dramatic night-city atmosphere",
     },
     retro_90s: {
         prompt:
-            "1990s style, retro anime, vintage anime, classic anime, cel shading, vhs artifacts, soft pastel colors, old anime style, nostalgic",
-        negative: "modern anime, high resolution, ultra sharp, glossy skin, 3d",
-        denoising: 0.55,
+            "retro 1990s anime cel look, classic hand-painted cel shading, softened linework, faded pastel palette, VHS-era texture, slightly muted contrast, old-school television anime mood, nostalgic character design",
     },
     webtoon: {
         prompt:
-            "korean webtoon style, manhwa style, solo leveling style, sharp features, aesthetic, detailed eyes, glossy hair, modern web comic",
-        negative: "chibi, cute, 90s style, thick lines",
-        denoising: 0.52,
+            "clean Korean webtoon illustration, sleek manhwa aesthetics, sharp facial structure, controlled gradients, glossy hair rendering, precise contour lines, elegant modern character styling, vertical-comic polish",
     },
     cosplay: {
         prompt:
-            "anime redraw of a cosplay photo, preserve outfit identity and key colors, polished 2d illustration look, clean linework, official anime art, vibrant colors",
-        negative: "photorealistic costume texture, messy linework, muddy colors, blurry",
-        denoising: 0.56,
+            "anime redraw of a cosplay photo, preserve costume identity, preserve signature outfit colors and accessories, polished 2D illustration finish, clean linework, expressive anime rendering, convention-poster quality",
     },
 };
-
-function clamp(value: number, min: number, max: number) {
-    return Math.min(max, Math.max(min, value));
-}
-
-function resolvePromptStrength(base: number, intensity: Intensity) {
-    if (intensity === "low") return clamp(base - 0.08, 0.35, 0.8);
-    if (intensity === "high") return clamp(base + 0.08, 0.35, 0.8);
-    return clamp(base, 0.35, 0.8);
-}
 
 function buildPromptParts(opts: {
     style: AnimeStyleId;
@@ -79,34 +52,33 @@ function buildPromptParts(opts: {
     const stylePreset = STYLE_PRESETS[opts.style] ?? STYLE_PRESETS.standard;
     const intensityInstruction =
         opts.intensity === "low"
-            ? "Apply a subtle anime edit. Keep the original facial structure, pose, and proportions very close to the uploaded photo."
+            ? "Use light anime stylization. Keep the person's recognizable facial structure, hairstyle silhouette, pose, and framing close to the original photo."
             : opts.intensity === "high"
-                ? "Apply a strong anime transformation with expressive 2D stylization, bolder linework, and a clearly illustrated look while keeping the person recognizable."
-                : "Apply a balanced anime transformation with clean 2D rendering while preserving identity.";
+                ? "Use strong anime stylization. Push the image confidently toward the target style with more illustrated features, clearer shape design, and a more transformed 2D look while still keeping the same person recognizable."
+                : "Use balanced anime stylization. Keep the same person recognizable while clearly shifting the image into the target illustrated style.";
 
     const keepInstructions: string[] = [];
-    if (opts.keepEyeColor) keepInstructions.push("Preserve the original eye color.");
-    if (opts.keepHairColor) keepInstructions.push("Preserve the original hair color.");
+    if (opts.keepEyeColor) keepInstructions.push("Keep the original eye color if visible in the source image.");
+    if (opts.keepHairColor) keepInstructions.push("Keep the original hair color as the dominant hair color.");
 
     const userInstruction = opts.userPrompt?.trim()
-        ? `Extra user request: ${opts.userPrompt.trim()}`
+        ? `Also incorporate this extra request if it does not conflict with the target style: ${opts.userPrompt.trim()}`
         : "";
 
     return {
         positive: [
-            "Transform the uploaded photo into polished anime artwork.",
-            "Keep the same person, pose, composition, and overall identity from the input image.",
-            `Use this target style: ${stylePreset.prompt}.`,
-            `Quality tags to emphasize: ${PONY_PREFIX}.`,
+            "Transform the uploaded portrait into anime-style artwork.",
+            "Keep the same person and overall identity from the source image.",
+            "Do not create a generic anime face. Preserve the person's distinct face shape, age impression, expression, and key facial traits.",
+            `Target visual direction: ${stylePreset.prompt}.`,
             intensityInstruction,
             ...keepInstructions,
-            "Output one clean final image with no text, no watermark, and no extra subjects unless requested.",
+            "Avoid photorealistic skin texture, 3D rendering, generic stock-anime features, and unnecessary background distractions.",
+            "Render one clean final image with no text, no watermark, and no extra people unless explicitly requested.",
             userInstruction,
         ]
             .filter(Boolean)
             .join(" "),
-        negative: `${PONY_NEGATIVE_PREFIX}, ${stylePreset.negative}, text, watermark, logo, caption, signature, jpeg artifacts, extra fingers, extra digits, bad hands, bad anatomy, blurry`,
-        promptStrength: resolvePromptStrength(stylePreset.denoising, opts.intensity),
     };
 }
 
@@ -214,7 +186,7 @@ export async function POST(request: NextRequest) {
 
         // 4. Call Replicate img2img API
         try {
-            const { positive, negative, promptStrength } = buildPromptParts({
+            const { positive } = buildPromptParts({
                 style,
                 intensity,
                 keepEyeColor,
@@ -300,8 +272,6 @@ export async function POST(request: NextRequest) {
                     keepHairColor,
                     model: REPLICATE_MODEL,
                     stylePrompt: stylePreset.prompt,
-                    styleNegativePrompt: negative,
-                    denoisingStrength: promptStrength,
                     promptFramework: "nano-banana-style-matrix",
                     provider: "replicate",
                 }
