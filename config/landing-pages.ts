@@ -28,8 +28,8 @@ export const landingPages = rawLandingPages as Record<string, LandingPageConfig>
 
 const landingPagesZh: Record<string, LandingPageLocalizedCopy> = {
   "photo-to-anime": {
-    titleZh: "免费照片转二次元 AI 在线生成器（免注册浏览）",
-    descriptionZh: "上传照片，用 AI 一键生成高质量二次元风格图片。支持吉卜力、赛博朋克、90 年代复古和韩漫风等风格，出图快、效果稳定。",
+    titleZh: "【免费体验】照片转二次元 AI - 一键在线生成绝美动漫头像",
+    descriptionZh: "想要看到你的二次元分身吗？立即免费体验最懂你的 AI 照片转二次元生成器！只需上传自拍，一键解锁吉卜力、韩漫、90年代复古等多种动漫滤镜。",
     h1Zh: "免费照片转二次元 AI 生成器",
     subtitleZh: "几秒内把任意照片变成动漫风格作品。选择风格、调整浓度，生成你的全新二次元形象。",
     faqsZh: [
@@ -44,8 +44,8 @@ const landingPagesZh: Record<string, LandingPageLocalizedCopy> = {
     ]
   },
   "ghibli-filter": {
-    titleZh: "免费吉卜力风格 AI 滤镜：把照片变成宫崎骏动画感",
-    descriptionZh: "上传你的照片，立即生成温暖治愈的吉卜力风格动漫插画。操作简单、出图快速、氛围感强。",
+    titleZh: "【免费体验】吉卜力滤镜 AI - 一键把照片变成治愈动画感",
+    descriptionZh: "上传自拍，一键生成温暖治愈的吉卜力灵感动漫头像。手绘氛围、柔和色彩、电影感十足，轻松做出像动画场景一样的照片效果。",
     h1Zh: "吉卜力风格 AI 滤镜",
     subtitleZh: "把任意照片快速变成带有手绘感与治愈氛围的吉卜力风格作品。",
     faqsZh: [
@@ -60,8 +60,8 @@ const landingPagesZh: Record<string, LandingPageLocalizedCopy> = {
     ]
   },
   "anime-pfp-generator": {
-    titleZh: "AI 动漫头像生成器：定制你的二次元 PFP",
-    descriptionZh: "为 Discord、Twitch 或社交平台生成专属动漫头像。上传自拍，选好风格，就能快速得到你的二次元 PFP。",
+    titleZh: "【免费体验】动漫头像生成器 - 一键定制你的二次元 PFP",
+    descriptionZh: "上传自拍，一键生成适合 Discord、Twitch 和社交平台的动漫头像。快速出图，轻松打造更有辨识度的二次元形象。",
     h1Zh: "动漫头像生成器",
     subtitleZh: "用你的真实照片生成专属二次元头像，让个人主页更有辨识度。",
     faqsZh: [
@@ -76,8 +76,8 @@ const landingPagesZh: Record<string, LandingPageLocalizedCopy> = {
     ]
   },
   "90s-anime-filter": {
-    titleZh: "90 年代复古动漫滤镜：把照片变成赛璐璐动画风",
-    descriptionZh: "把你的照片转换成带有 90 年代复古动画质感的二次元形象，适合怀旧头像与个性化编辑。",
+    titleZh: "【免费体验】90年代动漫滤镜 - 一键生成复古赛璐璐动画风",
+    descriptionZh: "上传照片，立即变成带有赛璐璐质感和怀旧配色的90年代复古动漫头像。适合想要老动画氛围、复古感和个性化头像的人。",
     h1Zh: "90 年代复古动漫滤镜",
     subtitleZh: "复古赛璐璐涂色、经典线条与怀旧配色，一键还原老动画氛围。",
     faqsZh: [
@@ -88,8 +88,8 @@ const landingPagesZh: Record<string, LandingPageLocalizedCopy> = {
     ]
   },
   "cyberpunk-anime": {
-    titleZh: "赛博朋克动漫滤镜：从照片生成霓虹未来风",
-    descriptionZh: "把你的照片变成霓虹灯感十足的赛博朋克动漫插画，适合玩家、主播和科幻风爱好者。",
+    titleZh: "【免费体验】赛博朋克动漫滤镜 - 一键生成霓虹未来风照片",
+    descriptionZh: "上传自拍，快速生成霓虹灯感十足的赛博朋克动漫头像。未来感、强对比和科幻氛围一步到位，特别适合玩家和主播。",
     h1Zh: "赛博朋克动漫滤镜",
     subtitleZh: "霓虹、未来感、强对比线条，让你的照片拥有强烈的科幻动漫气质。",
     faqsZh: [
@@ -100,8 +100,8 @@ const landingPagesZh: Record<string, LandingPageLocalizedCopy> = {
     ]
   },
   "webtoon-ai": {
-    titleZh: "韩漫风 AI 滤镜：把照片变成干净利落的韩漫风",
-    descriptionZh: "从照片生成现代、清爽、轮廓明确的韩漫风图像，非常适合头像与角色感编辑。",
+    titleZh: "【免费体验】韩漫风 AI 滤镜 - 一键生成清爽高级感韩漫画风",
+    descriptionZh: "上传照片，立即生成线条干净、轮廓利落、气质高级的韩漫风头像。适合喜欢现代感、角色感和精致脸部表现的人像编辑。",
     h1Zh: "韩漫风 AI 滤镜",
     subtitleZh: "简洁造型、清晰线条、易读阴影，让照片拥有现代韩漫质感。",
     faqsZh: [
@@ -112,8 +112,8 @@ const landingPagesZh: Record<string, LandingPageLocalizedCopy> = {
     ]
   },
   "cosplay-enhancer": {
-    titleZh: "Cos 照增强器：把 Cos 照变成精修动漫插画",
-    descriptionZh: "上传你的 Cosplay 照片，生成保留角色气质与服装元素的动漫风插画，适合发图和做头像。",
+    titleZh: "【免费体验】Cos照增强器 - 一键把 Cos 照变成精修动漫插画",
+    descriptionZh: "上传 Cosplay 照片，快速生成更精致的动漫风插画效果，尽量保留角色气质和服装特征，适合发图、做头像和角色展示。",
     h1Zh: "Cos 照增强器",
     subtitleZh: "把 Cos 照快速转成更精致的二次元插画，适合分享、发帖和做角色头像。",
     faqsZh: [
