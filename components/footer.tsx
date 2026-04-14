@@ -41,6 +41,7 @@ export function Footer() {
     { label: t('link_privacy'), href: `${localePrefix}/privacy` },
     { label: t('link_terms'), href: `${localePrefix}/terms` },
     { label: t('link_about'), href: `${localePrefix}/about` },
+    { label: t('link_contact'), href: `${localePrefix}/contact` },
   ];
 
   if (isDashboard) {

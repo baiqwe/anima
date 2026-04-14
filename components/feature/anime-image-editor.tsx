@@ -195,7 +195,7 @@ export function AnimeImageEditor({
     const uploadCard = (
         <div className="space-y-6">
         <div className="space-y-2 text-center">
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{title}</h1>
+          <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">{title}</h2>
           {subtitle ? <p className="mx-auto max-w-2xl text-lg leading-8 text-foreground/72">{subtitle}</p> : null}
         </div>
         <Card className="surface-panel p-6 md:p-8">

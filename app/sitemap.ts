@@ -3,7 +3,7 @@ import { site } from "@/config/site";
 import { locales } from "@/i18n/routing";
 import { indexableLandingPageSlugs } from "@/config/landing-pages";
 
-const staticPages = ["", "pricing", "privacy", "terms", "about"];
+const staticPages = ["", "pricing", "privacy", "terms", "about", "contact"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -18,8 +18,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: page ? (page === "privacy" || page === "terms" ? 0.5 : 0.8) : 1,
         alternates: {
           languages: {
-            en: new URL(page ? `/en/${page}` : "/en", site.siteUrl).toString(),
-            zh: new URL(page ? `/zh/${page}` : "/zh", site.siteUrl).toString(),
+            "en-US": new URL(page ? `/en/${page}` : "/en", site.siteUrl).toString(),
+            "zh-CN": new URL(page ? `/zh/${page}` : "/zh", site.siteUrl).toString(),
           },
         },
       } satisfies MetadataRoute.Sitemap[number];
@@ -34,8 +34,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
       alternates: {
         languages: {
-          en: new URL(`/en/${slug}`, site.siteUrl).toString(),
-          zh: new URL(`/zh/${slug}`, site.siteUrl).toString(),
+          "en-US": new URL(`/en/${slug}`, site.siteUrl).toString(),
+          "zh-CN": new URL(`/zh/${slug}`, site.siteUrl).toString(),
         },
       },
     }))

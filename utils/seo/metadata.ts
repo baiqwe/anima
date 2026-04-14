@@ -16,8 +16,8 @@ export function buildLocaleAlternates(pathname: string) {
   return {
     canonical: toAbsoluteUrl(normalizedPath),
     languages: {
-      en: toAbsoluteUrl(enPath),
-      zh: toAbsoluteUrl(zhPath),
+      "en-US": toAbsoluteUrl(enPath),
+      "zh-CN": toAbsoluteUrl(zhPath),
       "x-default": toAbsoluteUrl(enPath),
     },
   };

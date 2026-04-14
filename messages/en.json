@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "title": "[Free Try] Photo to Anime AI - Create a Stunning Anime Avatar in One Click",
-    "description": "Want to see your anime alter ego? Try our photo to anime AI generator for free. Upload a selfie and instantly unlock Ghibli-inspired, webtoon, and 90s retro anime filters to create your own high-impact anime look.",
+    "title": "[Free] Photo to Anime AI - 1-Click Anime Avatar Maker",
+    "description": "Turn your selfie into a stunning anime avatar in seconds. Free 1-click AI photo to anime converter with Ghibli, Webtoon, and 90s retro styles.",
     "keywords": "photo to anime, turn photo into anime, ai anime generator, free anime avatar maker, one click anime filter, ghibli filter ai, anime character creator"
   },
   "nav": {
@@ -118,9 +118,21 @@
     "link_privacy": "Privacy Policy",
     "link_terms": "Terms of Service",
     "link_about": "About",
+    "link_contact": "Contact",
     "rights": "All rights reserved.",
     "brand": "Our Site",
     "built_by": "Built for creators"
+  },
+  "Contact": {
+    "meta_title": "Contact Us | Animeify",
+    "meta_desc": "Reach Animeify support for generation issues, billing questions, privacy requests, or account help.",
+    "home": "Back to Home",
+    "title": "Contact Us",
+    "p1": "If you have questions about results, billing, privacy, or account issues, we are here to help. We keep this page simple so you always have a clear place to reach support.",
+    "support_title": "Customer Support",
+    "support_desc": "For help with orders, failed generations, refunds, or data requests, email us here:",
+    "p2": "To help us resolve your issue faster, include your account email and a short description of what happened.",
+    "p3": "We usually reply within 24 to 48 hours. If your request is about uploaded images or account data, mention that directly so we can route it correctly."
   },
   "Pricing": {
     "eyebrow": "Creator Pricing",

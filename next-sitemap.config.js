@@ -1,9 +1,24 @@
 /** @type {import('next-sitemap').IConfig} */
 const landingPages = require("./config/landing-pages.json");
 const landingPageSlugs = Object.keys(landingPages);
+const PRODUCTION_SITE_URL = "https://animeify.co";
+const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+
+function resolveSiteUrl() {
+    const rawUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || PRODUCTION_SITE_URL;
+
+    try {
+        const url = new URL(rawUrl);
+        return LOCAL_HOSTNAMES.has(url.hostname) ? PRODUCTION_SITE_URL : url.origin;
+    } catch {
+        return PRODUCTION_SITE_URL;
+    }
+}
+
+const siteUrl = resolveSiteUrl();
 
 module.exports = {
-    siteUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+    siteUrl,
     generateRobotsTxt: true,
     generateIndexSitemap: false,
 
@@ -22,12 +37,12 @@ module.exports = {
     // Generate alternate language links
     alternateRefs: [
         {
-            href: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/en`,
-            hreflang: 'en',
+            href: `${siteUrl}/en`,
+            hreflang: 'en-US',
         },
         {
-            href: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/zh`,
-            hreflang: 'zh',
+            href: `${siteUrl}/zh`,
+            hreflang: 'zh-CN',
         },
     ],
 
@@ -50,7 +65,7 @@ module.exports = {
     // ✅ 核心修复：手动添加动态路由路径
     additionalPaths: async (config) => {
         const locales = ['en', 'zh'];
-        const staticPages = ['pricing', 'privacy', 'terms', 'about'];
+        const staticPages = ['pricing', 'privacy', 'terms', 'about', 'contact'];
         const result = [];
 
         // Landing pages (pSEO slugs)
