@@ -3,21 +3,86 @@
 import { useCallback, useId, useState } from 'react';
 import { useDropzone, type FileRejection } from 'react-dropzone';
 import { useTranslations } from 'next-intl';
-import { Upload } from 'lucide-react';
+import { useLocale } from 'next-intl';
+import { Lock, Upload } from 'lucide-react';
+import Image from 'next/image';
+import type { AnimeStyleId } from '@/config/landing-pages';
 
 interface ImageUploaderProps {
     onImageSelect: (imageSrc: string, file: File) => void;
     onHeicConvert?: (file: File) => Promise<string>;
+    onDemoPresetSelect?: (style: AnimeStyleId) => void;
 }
 
-export default function ImageUploader({ onImageSelect, onHeicConvert }: ImageUploaderProps) {
+const DEMO_IMAGES: Array<{
+    id: AnimeStyleId;
+    previewSrc: string;
+    uploadSrc: string;
+    labelEn: string;
+    labelZh: string;
+}> = [
+    {
+        id: "standard",
+        previewSrc: "/images/gallery/generated/standard.jpg",
+        uploadSrc: "/images/gallery/hero-before.jpg",
+        labelEn: "Classic",
+        labelZh: "标准",
+    },
+    {
+        id: "ghibli",
+        previewSrc: "/images/gallery/generated/ghibli.jpg",
+        uploadSrc: "/images/gallery/hero-before.jpg",
+        labelEn: "Ghibli",
+        labelZh: "吉卜力",
+    },
+    {
+        id: "webtoon",
+        previewSrc: "/images/gallery/generated/webtoon.jpg",
+        uploadSrc: "/images/gallery/hero-before.jpg",
+        labelEn: "Webtoon",
+        labelZh: "韩漫",
+    },
+    {
+        id: "retro_90s",
+        previewSrc: "/images/gallery/generated/retro_90s.jpg",
+        uploadSrc: "/images/gallery/hero-before.jpg",
+        labelEn: "90s",
+        labelZh: "90年代",
+    },
+    {
+        id: "cyberpunk",
+        previewSrc: "/images/gallery/generated/cyberpunk.jpg",
+        uploadSrc: "/images/gallery/hero-before.jpg",
+        labelEn: "Cyber",
+        labelZh: "赛博",
+    },
+    {
+        id: "cosplay",
+        previewSrc: "/images/gallery/generated/cosplay.jpg",
+        uploadSrc: "/images/gallery/hero-before.jpg",
+        labelEn: "Cosplay",
+        labelZh: "重绘",
+    },
+] as const;
+
+export default function ImageUploader({ onImageSelect, onHeicConvert, onDemoPresetSelect }: ImageUploaderProps) {
     const t = useTranslations('uploader');
+    const locale = useLocale();
     const [error, setError] = useState<string>('');
     const maxSize = 15 * 1024 * 1024; // 15MB
     const titleId = useId();
     const helperId = useId();
     const errorId = useId();
     const fileInputId = useId();
+
+    const readFileAsDataUrl = useCallback((file: File) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const result = e.target?.result as string;
+            onImageSelect(result, file);
+        };
+        reader.readAsDataURL(file);
+    }, [onImageSelect]);
 
     const getRejectionMessage = useCallback((rejections: FileRejection[]) => {
         const firstError = rejections[0]?.errors[0];
@@ -78,6 +143,27 @@ export default function ImageUploader({ onImageSelect, onHeicConvert }: ImageUpl
             console.error(err);
         }
     }, [onImageSelect, onHeicConvert, t]);
+
+    const handleDemoClick = useCallback(async (url: string, style: AnimeStyleId) => {
+        setError('');
+        onDemoPresetSelect?.(style);
+
+        try {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch demo image: ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            const extension = blob.type.includes("png") ? "png" : "jpg";
+            const file = new File([blob], `demo-image.${extension}`, { type: blob.type || "image/jpeg" });
+            readFileAsDataUrl(file);
+        } catch (err) {
+            console.error("Failed to load demo image", err);
+            setError(t('error_demo'));
+        }
+    }, [onDemoPresetSelect, readFileAsDataUrl, t]);
 
     const onDropRejected = useCallback((fileRejections: FileRejection[]) => {
         setError(getRejectionMessage(fileRejections));
@@ -144,6 +230,41 @@ export default function ImageUploader({ onImageSelect, onHeicConvert }: ImageUpl
                     >
                         {t('browse')}
                     </span>
+                </div>
+            </div>
+
+            <div className="mt-6 space-y-5 text-center">
+                <p className="flex items-center justify-center gap-2 text-[13px] leading-6 text-foreground/62">
+                    <Lock className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                    <span>{t('privacy_notice')}</span>
+                </p>
+
+                <div className="border-t border-border/60 pt-4">
+                    <p className="mb-3 text-sm text-foreground/72">{t('try_demo')}</p>
+                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+                        {DEMO_IMAGES.map((item, idx) => (
+                            <button
+                                key={item.id}
+                                onClick={() => handleDemoClick(item.uploadSrc, item.id)}
+                                className="group relative overflow-hidden rounded-[18px] border border-white/70 bg-background shadow-[0_18px_28px_-24px_rgba(15,23,42,0.28)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_22px_36px_-24px_hsl(var(--primary))] focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2"
+                                type="button"
+                                aria-label={`${t('demo_aria', { number: idx + 1 })} · ${locale === "zh" ? item.labelZh : item.labelEn}`}
+                            >
+                                <div className="relative aspect-[4/5]">
+                                    <Image
+                                        src={item.previewSrc}
+                                        alt={`${t('demo_alt', { number: idx + 1 })} · ${locale === "zh" ? item.labelZh : item.labelEn}`}
+                                        fill
+                                        sizes="(max-width: 640px) 30vw, 96px"
+                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                </div>
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 pb-2 pt-6 text-[11px] font-semibold tracking-[0.02em] text-white">
+                                    {locale === "zh" ? item.labelZh : item.labelEn}
+                                </div>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 

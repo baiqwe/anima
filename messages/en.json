@@ -29,11 +29,16 @@
     "title": "Upload Your Image",
     "drop_zone": "Drag & drop your image here, or click to browse",
     "supported_formats": "Supported: JPG, PNG, WebP, HEIC",
+    "privacy_notice": "Your image is used only for this generation and is never used to train our own models.",
+    "try_demo": "No photo? Try these demos:",
     "or": "or",
     "browse": "Browse Files",
     "processing": "Processing...",
     "error_invalid": "Invalid file type. Please upload an image.",
-    "error_size": "File too large. Maximum size is 15MB."
+    "error_size": "File too large. Maximum size is 15MB.",
+    "error_demo": "Failed to load the demo image. Please try another one.",
+    "demo_alt": "Demo image {number}",
+    "demo_aria": "Use demo image {number}"
   },
   "anime_editor": {
     "panel_title": "Anime Settings",
@@ -62,7 +67,10 @@
     "disclaimer": "Results vary by photo quality and chosen style.",
     "preview_before": "Before",
     "preview_after": "After",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "try_other_styles": "Love this? Try these styles next:",
+    "credits_remaining": "{count} credits left",
+    "credits_last_chance": "Only 1 credit left"
   },
   "home_static": {
     "f1_title": "Anime-First Styles",
@@ -133,8 +141,8 @@
     "missing_features": "Missing features",
     "faq_kicker": "Why upgrade?",
     "checkout_failed": "Failed to start payment process.",
-    "refill_title": "Need more credits?",
-    "refill_subtitle": "Pick a quick buy-out pack or jump straight into Pro.",
+    "refill_title": "Your anime journey continues! ⚡️",
+    "refill_subtitle": "Unlock Animeify Pro for 100 generations, faster checkout flow, and zero-watermark exports. Infinite imagination for the price of a coffee.",
     "refill_upgrade": "Go Pro Monthly",
     "refill_mini": "Get 10 credits",
     "cards": {

@@ -32,9 +32,9 @@ export async function getUserCredits(userId: string) {
                         project_id: projectId,
                         user_id: userId,
                         email: user.email,
-                        credits: 30, // Default signup bonus
+                        credits: 3, // Default signup bonus
                         creem_customer_id: `auto_${userId}`,
-                        metadata: { source: 'auto_recovery' }
+                        metadata: { source: 'auto_recovery', initial_credits: 3 }
                     })
                     .select()
                     .single();

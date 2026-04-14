@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import ImageUploader from "@/components/feature/image-uploader";
+import { QuickRefillModal } from "@/components/payment/quick-refill-modal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -13,6 +15,7 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Download, Loader2, RefreshCw, Wand2 } from "lucide-react";
 import type { AnimeStyleId } from "@/config/landing-pages";
+import { useCredits } from "@/hooks/use-credits";
 import { useUser } from "@/hooks/use-user";
 
 type Intensity = "low" | "medium" | "high";
@@ -70,7 +73,9 @@ export function AnimeImageEditor({
 }: AnimeImageEditorProps) {
   const t = useTranslations("anime_editor");
   const { user: hookUser } = useUser();
+  const { credits, refetchCredits } = useCredits();
   const user = initialUser ?? hookUser;
+  const pathname = usePathname();
 
   const [originalImage, setOriginalImage] = useState("");
   const [fileName, setFileName] = useState("image");
@@ -84,6 +89,7 @@ export function AnimeImageEditor({
   const [resultImage, setResultImage] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isQuickRefillOpen, setIsQuickRefillOpen] = useState(false);
 
   useEffect(() => {
     setStyle(defaultStyle);
@@ -116,7 +122,7 @@ export function AnimeImageEditor({
     link.click();
   };
 
-  const handleGenerate = async () => {
+  const executeGenerate = async (targetStyle: AnimeStyleId = style) => {
     if (!originalImage) return;
 
     setIsGenerating(true);
@@ -131,7 +137,7 @@ export function AnimeImageEditor({
         },
         body: JSON.stringify({
           image: originalImage,
-          style,
+          style: targetStyle,
           intensity,
           keepEyeColor,
           keepHairColor,
@@ -155,6 +161,11 @@ export function AnimeImageEditor({
         }
       }
 
+      if (response.status === 402 && data?.code === "INSUFFICIENT_CREDITS") {
+        setIsQuickRefillOpen(true);
+        return;
+      }
+
       if (!response.ok) {
         const fallbackMessage =
           typeof data?.error === "string" && data.error.trim()
@@ -168,6 +179,7 @@ export function AnimeImageEditor({
       }
 
       setResultImage(data.url);
+      void refetchCredits();
     } catch (e: any) {
       setError(e instanceof Error ? e.message : t("error_failed"));
     } finally {
@@ -175,15 +187,23 @@ export function AnimeImageEditor({
     }
   };
 
+  const handleGenerate = () => {
+    void executeGenerate(style);
+  };
+
   if (!originalImage) {
     const uploadCard = (
-      <div className="space-y-6">
+        <div className="space-y-6">
         <div className="space-y-2 text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{title}</h1>
           {subtitle ? <p className="mx-auto max-w-2xl text-lg leading-8 text-foreground/72">{subtitle}</p> : null}
         </div>
         <Card className="surface-panel p-6 md:p-8">
-          <ImageUploader onImageSelect={handleImageSelect} onHeicConvert={convertHeic} />
+          <ImageUploader
+            onImageSelect={handleImageSelect}
+            onHeicConvert={convertHeic}
+            onDemoPresetSelect={setStyle}
+          />
         </Card>
       </div>
     );
@@ -307,25 +327,38 @@ export function AnimeImageEditor({
           ) : null}
 
           <div className="flex gap-3 pt-2">
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !originalImage}
-              className="flex-1 rounded-full shadow-[0_18px_30px_-18px_hsl(var(--primary))] data-[loading=true]:animate-pulse"
-              size="lg"
-              data-loading={isGenerating}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t("generating")}
-                </>
-              ) : (
-                <>
-                  <Wand2 className="w-4 h-4 mr-2" />
-                  {t("generate")}
-                </>
-              )}
-            </Button>
+            <div className="flex-1">
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || !originalImage}
+                className="w-full rounded-full shadow-[0_18px_30px_-18px_hsl(var(--primary))] data-[loading=true]:animate-pulse"
+                size="lg"
+                data-loading={isGenerating}
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {t("generating")}
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    {t("generate")}
+                  </>
+                )}
+              </Button>
+              {user && typeof credits?.remaining_credits === "number" ? (
+                <p
+                  className={`mt-2 text-center text-xs ${
+                    credits.remaining_credits <= 1 ? "text-amber-600" : "text-foreground/60"
+                  }`}
+                >
+                  {credits.remaining_credits <= 1
+                    ? t("credits_last_chance")
+                    : t("credits_remaining", { count: credits.remaining_credits })}
+                </p>
+              ) : null}
+            </div>
             <Button onClick={handleReset} variant="outline" size="lg" className="rounded-full">
               <RefreshCw className="w-4 h-4 mr-2" />
               {t("reset")}
@@ -387,11 +420,44 @@ export function AnimeImageEditor({
               </div>
             </div>
           </div>
+
+          {resultImage && !isGenerating && !error ? (
+            <div className="rounded-[24px] border border-primary/15 bg-primary/[0.03] p-5 text-center">
+              <p className="mb-3 text-sm font-semibold text-foreground/80">
+                {t("try_other_styles")}
+              </p>
+              <div className="flex flex-wrap justify-center gap-2.5">
+                {STYLE_OPTIONS.filter((option) => option.id !== style)
+                  .slice(0, 3)
+                  .map((option) => (
+                    <Button
+                      key={option.id}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full bg-background hover:border-primary/50 hover:bg-primary/5 transition-all shadow-sm"
+                      onClick={() => {
+                        setStyle(option.id);
+                        void executeGenerate(option.id);
+                      }}
+                    >
+                      <Wand2 className="mr-1.5 h-3 w-3 text-primary opacity-80" />
+                      {option.label}
+                    </Button>
+                  ))}
+              </div>
+            </div>
+          ) : null}
+
           <div className="text-center text-xs text-foreground/60">
             {t("disclaimer")}
           </div>
         </div>
       </div>
+      <QuickRefillModal
+        isOpen={isQuickRefillOpen}
+        onClose={() => setIsQuickRefillOpen(false)}
+        currentPath={pathname}
+      />
     </div>
   );
 }

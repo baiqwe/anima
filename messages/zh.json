@@ -29,11 +29,16 @@
     "title": "上传图片",
     "drop_zone": "拖放图片到这里，或点击选择文件",
     "supported_formats": "支持：JPG、PNG、WebP、HEIC",
+    "privacy_notice": "图片仅用于当前生成，不会用于训练我们的自有模型。",
+    "try_demo": "没照片？先试试这些示例：",
     "or": "或",
     "browse": "选择文件",
     "processing": "处理中...",
     "error_invalid": "文件类型无效，请上传图片。",
-    "error_size": "文件太大，最大 15MB。"
+    "error_size": "文件太大，最大 15MB。",
+    "error_demo": "示例图片加载失败，请换一张试试。",
+    "demo_alt": "示例图片 {number}",
+    "demo_aria": "使用示例图片 {number}"
   },
   "anime_editor": {
     "panel_title": "二次元设置",
@@ -62,7 +67,10 @@
     "disclaimer": "效果取决于图片质量与风格选择。",
     "preview_before": "原图",
     "preview_after": "生成后",
-    "processing": "处理中..."
+    "processing": "处理中...",
+    "try_other_styles": "喜欢这个效果？一键试试其他画风：",
+    "credits_remaining": "剩余 {count} 积分",
+    "credits_last_chance": "仅剩 1 积分"
   },
   "home_static": {
     "f1_title": "动漫优先",
@@ -133,8 +141,8 @@
     "missing_features": "缺失特权",
     "faq_kicker": "为什么值得升级？",
     "checkout_failed": "发起支付失败。",
-    "refill_title": "积分不够了？",
-    "refill_subtitle": "可以买断包快速补充，或者直接升级专业版。",
+    "refill_title": "二次元之旅才刚刚开始！ ⚡️",
+    "refill_subtitle": "解锁 Animeify Pro，获取 100 次生成额度、更顺滑的结账体验与零水印导出。一杯咖啡的价格，换来更多想象力。",
     "refill_upgrade": "开通专业版月订阅",
     "refill_mini": "购买 10 积分",
     "cards": {
